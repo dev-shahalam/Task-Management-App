@@ -1,6 +1,11 @@
 <script setup>
 
-import { reactive, ref, onMounted } from "vue";
+import { ref} from 'vue';
+
+// Reactive data for tasks
+const taskList = ref(JSON.parse(localStorage.getItem('tasks')) || []);
+
+
 
 const isActive = ref(false);
 const msg = ref('Show Add Task Form')
@@ -13,21 +18,21 @@ function toggleForm() {
 
 // task store
 const task = ref('');
-let taskList = reactive(
-    []
-);
+
+
 
 
 // Add task function
 function addTask() {
     task.value.trim().split(/\s+/);
     if (task.value === '' || task.value.length < 3) return alert('Please Enter Task Name & Min 3 Characters')
-    taskList.push({
-        name: task.value,
-        status: false
+    taskList.value.push({
+        name: task.value.trim(),
+        status: false,
     });
+
+    localStorage.setItem('tasks', JSON.stringify(taskList.value))
     task.value = '';
-    saveTasks();
 }
 
 const comStyle = {
@@ -37,40 +42,27 @@ const comStyle = {
 
 // Delete Task Function
 function deleteTask(index) {
-    taskList.splice(index, 1);
+    alert('Delete this task !')
+    taskList.value.splice(index, 1);
+    localStorage.setItem('tasks', JSON.stringify(taskList.value))
 }
 
 
 
 function completeTask(index) {
-    taskList[index].status = !taskList[index].status;
+    taskList.value[index].status = !taskList.value[index].status;
+    localStorage.setItem('tasks', JSON.stringify(taskList.value))
 }
 
+
+// localStorage.clear()
 let search = ref('');
 
 function getFilteredList() {
-    return taskList.filter(task => {
+    return taskList.value.filter(task => {
         return task.name.toLowerCase().startsWith(search.value.toLowerCase())
     })
 };
-
-
-
-
-const saveTasks = () => {
-    localStorage.setItem('tasks', JSON.stringify(taskList));
-};
-
-const loadTasks = () => {
-    const saved = localStorage.getItem('tasks');
-    taskList=saved
-};
-
-
-// loadTasks();
-
-
-
 
 </script>
 
@@ -98,6 +90,7 @@ const loadTasks = () => {
                 <input class="px-2 py-2 border border-slate-400 rounded-sm outline-none" v-show="taskList.length !== 0"
                     v-model="search" type="text" placeholder="Search Task">
 
+
                 <h4 v-show="taskList.length === 0">No tasks available</h4>
             </div>
             <div :style="task.status === true ? comStyle : ''" v-for="(task, index) in getFilteredList()" :key="index"
@@ -105,29 +98,16 @@ const loadTasks = () => {
                 <div>
                     <p>{{ task.name }}</p>
                 </div>
-
                 <div>
                     <button @click="completeTask(index)"
                         class="bg-purple-500 hover:bg-slate-500 transition px-2 py-2 my-5 rounded text-white text-sm">
                         {{ task.status === true ? 'Completed' : 'Complete' }} </button>
-
                     <button @click="deleteTask(index)"
                         class="bg-purple-500 hover:bg-slate-500 transition px-2 py-2 my-5 ml-2 rounded text-white text-sm">
                         Delete </button>
                 </div>
-
             </div>
-
-
         </div>
-
-
-
-
-
-
-
-
     </div>
 </template>
 
